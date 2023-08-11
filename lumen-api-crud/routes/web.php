@@ -17,8 +17,14 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
-$router->get('/education', 'EducationController@index');
-$router->post('/education/store', 'EducationController@store');
 
-$router->post('/register', 'UserController@register');
-$router->post('/login', 'UserController@login');
+$router->post('/User', 'UserController@index');
+$router->post('/refresh', 'UserController@refresh');
+
+
+
+$router->group(['middleware' => ['validatecrsf', 'jwt.auth']], function () use ($router) {
+    $router->get('/crsfReq', 'UserController@crsf');
+    $router->post('/User/Register', 'UserController@register');
+    $router->post('/Education', 'EducationController@index');
+});

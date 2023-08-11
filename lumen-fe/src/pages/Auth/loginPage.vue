@@ -6,11 +6,15 @@
 </template>
 
 <script>
-import LoginForm from '@/components/Auth/LoginForm.vue';
-
+import LoginForm from "@/components/Auth/LoginForm.vue";
+import globalFunc from "@/libs/globalFunc.vue";
 export default {
+  extends: globalFunc,
   components: {
-    'login-form': LoginForm
-  }
+    "login-form": LoginForm,
+  },
+  mounted() {
+    console.log(this.generateEncryptedApiKey);
+  },
 };
 </script>

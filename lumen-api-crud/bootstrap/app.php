@@ -56,7 +56,7 @@ $app->singleton(
 | the default version. You may register other files below as needed.
 |
 */
-
+$app->configure('auth');
 $app->configure('app');
 
 /*
@@ -69,13 +69,16 @@ $app->configure('app');
 | route or middleware that'll be assigned to some specific routes.
 |
 */
+$app->configure('jwt');
 
 $app->middleware([
-    App\Http\Middleware\CorsMiddleware::class // Add this
+    App\Http\Middleware\CorsMiddleware::class
+
 ]);
 
 $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
+    'validatecrsf' => App\Http\Middleware\ValidateCrsf::class,
 ]);
 
 /*
@@ -91,6 +94,8 @@ $app->routeMiddleware([
 
 // $app->register(App\Providers\AppServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
+$app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
+
 // $app->register(App\Providers\EventServiceProvider::class);
 
 /*

@@ -14,7 +14,25 @@ class EducationController extends Controller
         $this->middleware('auth');
     }
 
-    public function index()
+    public function index(Request $request)
+    {
+
+        $checkMethod = $request->input('methodType');
+
+        if ($request->isMethod('post')) {
+            switch ($checkMethod) {
+                case 'getAll':
+                    return $this->getAll();
+                case 'store':
+                    return $this->store($request);
+                case 'getById':
+                    return $this->getById($request);
+                    break;
+            }
+        }
+    }
+
+    public function getAll()
     {
         $getAll = Education::select(DB::raw('id,educationGrade'))
             ->orderBy('id')
@@ -34,5 +52,12 @@ class EducationController extends Controller
         ]);
 
         return response()->json(['message' => 'Data added successfully'], 201);
+    }
+
+    public function getById(Request $id)
+    {
+        $doFind =  Education::find($id);
+
+        return response()->json([$doFind], 200);
     }
 }

@@ -5,9 +5,27 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Validator;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Str;
+
 
 class UserController extends Controller
 {
+
+    public function index(Request $request)
+    {
+
+        $checkMethode = $request->input('methodType');
+
+        if ($request->isMethod('post')) {
+            switch ($checkMethode) {
+                case 'login':
+                    return $this->login($request);
+                    break;
+            }
+        }
+    }
 
     public function register(Request $request)
     {
@@ -34,29 +52,81 @@ class UserController extends Controller
 
     public function login(Request $request)
     {
-        $this->validate($request, [
-            'userName' => 'required',
-            'password' => 'required|min:6'
-        ]);
 
-        $userName = $request->input('userName');
-        $password = $request->input('password');
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'userName' => 'required',
+                'password' => 'required|min:6'
+            ]
+        );
 
-        $user = User::where('userName', $userName)->first();
-        if (!$user) {
-            return response()->json(['message' => 'User Not Found'], 401);
+        if ($validator->fails()) {
+            $resp = [
+                'metadata' => [
+                    'message' => $validator->errors()->first(),
+                    'code'    => 422
+                ]
+            ];
+            return response()->json($resp, 422);
+            die();
         }
 
-        $isValidPassword = Hash::check($password, $user->password);
-        if (!$isValidPassword) {
-            return response()->json(['message' => 'Login failed'], 401);
+        $user = User::where('userName', $request->userName)->first();
+        if ($user) {
+
+            if (Hash::check($request->password, $user->password)) {
+
+                $token = \Auth::login($user);
+                $resp = [
+                    'response' => [
+                        'token' => $token
+                    ],
+                    'metadata' => [
+                        'message' => 'OK',
+                        'code'    => 200
+                    ]
+                ];
+
+                return response()->json($resp);
+            } else {
+
+                $resp = [
+                    'metadata' => [
+                        'message' => 'Username Atau Password Tidak Sesuai',
+                        'code'    => 401
+                    ]
+                ];
+
+                return response()->json($resp, 401);
+            }
+        } else {
+            $resp = [
+                'metadata' => [
+                    'message' => 'Username Atau Password Tidak Sesuai',
+                    'code'    => 401
+                ]
+            ];
+
+            return response()->json($resp, 401);
         }
+    }
 
-        $generateToken = bin2hex(random_bytes(40));
-        $user->update([
-            'token' => $generateToken
-        ]);
+    public function refresh(Request $request)
+    {
+        try {
+            $newToken = JWTAuth::setToken($request->input('refresh_token'))->refresh();
+            return response()->json(['token' => $newToken]);
+        } catch (\Exception $th) {
+            return response()->json(['message' => 'Invalid refresh token'], 401);
+        }
+    }
 
-        return response()->json($user, 200);
+    public function crsf()
+    {
+        $csrfToken = csrf_token();
+        $csrfSignature = hash_hmac('sha256', $csrfToken, env('APP_CSRF_KEY'));
+
+        return response()->json($csrfToken, 200);
     }
 }
