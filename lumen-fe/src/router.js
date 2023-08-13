@@ -2,10 +2,11 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 Vue.use(VueRouter);
 
-const routes = [
-  {
+const routes = [{
     path: "/",
-    redirect: { name: "login" },
+    redirect: {
+      name: "login"
+    },
   },
   {
     path: "/login",
@@ -45,7 +46,9 @@ router.beforeEach((to, from, next) => {
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     const token = localStorage.getItem("token");
     if (!token) {
-      next({ name: "login" });
+      next({
+        name: "login"
+      });
     } else {
       next();
     }

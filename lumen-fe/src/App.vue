@@ -1,10 +1,5 @@
 <template>
   <div id="app">
-    <script
-      src="https://www.google.com/recaptcha/api.js?onload=vueRecaptchaApiLoaded&render=explicit"
-      async
-      defer
-    ></script>
     <b-container>
       <nav-component v-if="showNav" />
       <router-view></router-view>

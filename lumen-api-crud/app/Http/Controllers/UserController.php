@@ -7,8 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use Illuminate\Support\Str;
-
+use GuzzleHttp\Client;
 
 class UserController extends Controller
 {
@@ -22,6 +21,8 @@ class UserController extends Controller
             switch ($checkMethode) {
                 case 'login':
                     return $this->login($request);
+                case 'captcha':
+                    return $this->captcha($request);
                     break;
             }
         }
@@ -112,6 +113,26 @@ class UserController extends Controller
         }
     }
 
+    public function captcha(Request $request)
+    {
+
+        $secretKey = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'; // Ganti dengan secret key reCAPTCHA Anda
+        $url = 'https://www.google.com/recaptcha/api/siteverify';
+
+        $client = new Client();
+
+        $reponse = $client->post($url, [
+            'form_params' => [
+                'secret' => $secretKey,
+                'response' => $request->response
+            ]
+        ]);
+
+        $body = json_decode($reponse->getBody());
+
+        return $body->success;
+    }
+
     public function refresh(Request $request)
     {
         try {
@@ -122,11 +143,11 @@ class UserController extends Controller
         }
     }
 
-    public function crsf()
-    {
-        $csrfToken = csrf_token();
-        $csrfSignature = hash_hmac('sha256', $csrfToken, env('APP_CSRF_KEY'));
+    // public function crsf()
+    // {
+    //     $csrfToken = csrf_token();
+    //     $csrfSignature = hash_hmac('sha256', $csrfToken, env('APP_CSRF_KEY'));
 
-        return response()->json($csrfToken, 200);
-    }
+    //     return response()->json($csrfToken, 200);
+    // }
 }
