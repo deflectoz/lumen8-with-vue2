@@ -8,6 +8,8 @@ use App\Models\User;
 use Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\DB;
+
 
 class UserController extends Controller
 {
@@ -23,6 +25,10 @@ class UserController extends Controller
                     return $this->login($request);
                 case 'captcha':
                     return $this->captcha($request);
+                case 'getUser':
+                    return $this->getUser($request);
+                case 'getAlluser':
+                    return $this->getAlluser();
                     break;
             }
         }
@@ -39,13 +45,24 @@ class UserController extends Controller
             'idEducation' => 'required'
         ]);
 
+        if ($request->hasFile('fileKtp')) {
+            $fileName = $request->file('fileKtp')->getClientOriginalName();
+            $fileExplode = explode('.', $fileName);
+            $fileExt = '.' . end($fileExplode);
+            $path = storage_path('userData');
+            $image = 'Data-KTP' . time();
+            $request->file('fileKtp')->move($path, ($image . $fileExt));
+        }
+
         $doInsert = User::create([
             'userName' => $request->input('userName'),
             'password' => Hash::make($request->input('password')),
             'firstName' => $request->input('firstName'),
             'lastName' => $request->input('lastName'),
             'age' => $request->input('age'),
-            'idEducation' => $request->input('idEducation')
+            'idEducation' => $request->input('idEducation'),
+            'fileKtp' => isset($image) ?$image : null,
+            'fileKtpExt' => isset($fileExt) ?$fileExt : null
         ]);
 
         return response()->json(['message' => 'Data added successfully'], 201);
@@ -143,11 +160,26 @@ class UserController extends Controller
         }
     }
 
-    // public function crsf()
-    // {
-    //     $csrfToken = csrf_token();
-    //     $csrfSignature = hash_hmac('sha256', $csrfToken, env('APP_CSRF_KEY'));
+    public function getAlluser()
+    {
+        $findAllUser = DB::select("SELECT A.firstName,A.lastName,A.userName,A.age,B.educationGrade FROM users AS A JOIN educations AS B ON A.idEducation = B.id ");
+        return $this->successResponse($findAllUser);
+    }
 
-    //     return response()->json($csrfToken, 200);
-    // }
+    public function getUser(Request $request)
+    {
+        $findUser = User::where('id', $request->id)->first();
+        return $this->successResponse($findUser);
+    }
+
+    public function getFileKtp(Request $request)
+    {
+
+        $ktpPath = storage_path('userData') . '/' . $request->fileName . $request->fileKtpExt;
+
+        if (file_exists($ktpPath)) {
+            $file = file_get_contents($ktpPath);
+            return response($file, 200)->header('Content-Type', 'image/jpeg');
+        }
+    }
 }

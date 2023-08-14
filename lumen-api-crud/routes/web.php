@@ -25,6 +25,10 @@ $router->post('/refresh', 'UserController@refresh');
 
 $router->group(['middleware' => ['validatecrsf', 'jwt.auth']], function () use ($router) {
     $router->get('/crsfReq', 'UserController@crsf');
+    $router->get('/User/getAllUser', 'UserController@getAlluser');
+    $router->post('/User/getUser', 'UserController@getUser');
+
     $router->post('/User/Register', 'UserController@register');
+    $router->post('/User/getFileKtp', 'UserController@getFileKtp');
     $router->post('/Education', 'EducationController@index');
 });

@@ -2,10 +2,11 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 Vue.use(VueRouter);
 
-const routes = [{
+const routes = [
+  {
     path: "/",
     redirect: {
-      name: "login"
+      name: "login",
     },
   },
   {
@@ -22,6 +23,15 @@ const routes = [{
     component: () => import("@/pages/Dashboard/dashboardPage.vue"),
     meta: {
       menu: "Dashboard",
+      requiresAuth: true,
+    },
+  },
+  {
+    path: "/user",
+    name: "User List",
+    component: () => import("@/pages/Auth/user-listPage.vue"),
+    meta: {
+      menu: "User",
       requiresAuth: true,
     },
   },
@@ -47,7 +57,7 @@ router.beforeEach((to, from, next) => {
     const token = localStorage.getItem("token");
     if (!token) {
       next({
-        name: "login"
+        name: "login",
       });
     } else {
       next();

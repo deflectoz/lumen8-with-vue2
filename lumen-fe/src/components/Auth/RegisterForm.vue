@@ -60,6 +60,13 @@
           </template>
         </b-form-select>
       </b-form-group>
+      <b-form-file
+        v-model="fileKtp"
+        :state="Boolean(fileKtp)"
+        placeholder="Choose a file or drop it here..."
+        drop-placeholder="Drop file here..."
+      ></b-form-file>
+      <div class="mt-3">Selected file: {{ fileKtp ? fileKtp.name : "" }}</div>
       <b-button type="submit" variant="success">Register !</b-button>
     </b-form>
   </div>
@@ -78,6 +85,7 @@ export default {
         idEducation: 0,
         methodType: "register",
       },
+      fileKtp: null,
       lvlEducation: [],
 
       show: true,
@@ -88,7 +96,7 @@ export default {
   },
   methods: {
     fetchEducationlevel() {
-      console.log(this.$parent.modulePage);
+      // console.log(this.$parent.modulePage);
       this.$parent
         .postApi(this.$parent.modulePage, {
           methodType: "getAll",
@@ -102,12 +110,19 @@ export default {
         });
     },
     storeRegis() {
+      let formData = new FormData();
+      for (let key in this.form) {
+        formData.append(key, this.form[key]);
+      }
+      formData.append("fileKtp", this.fileKtp);
+      console.log(...formData);
       this.$parent
-        .postApi("User/Register", this.form)
+        .postApi("User/Register", formData)
         .then((response) => {
           if (response) {
             alert("Berhasil Register Dengan Id :" + this.form.userName);
             this.resetForm();
+            this.$router.push("/user");
           }
         })
         .catch((error) => {
@@ -121,6 +136,7 @@ export default {
       this.form.lastName = null;
       this.form.age = null;
       this.form.idEducation = 0;
+      this.fileKtp = null;
     },
   },
 };

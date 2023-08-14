@@ -21,7 +21,7 @@ class User extends Model implements JWTSubject, AuthenticatableContract, Authori
      */
     protected $table = 'users';
     protected $fillable = [
-        'userName', 'password', 'firstName', 'lastName', 'age', 'idEducation', 'token'
+        'userName', 'password', 'firstName', 'lastName', 'age', 'idEducation', 'token', 'fileKtp', 'fileKtpExt'
     ];
 
     /**
